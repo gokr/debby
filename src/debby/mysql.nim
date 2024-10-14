@@ -1,5 +1,5 @@
 import common, jsony, std/strutils, std/strformat, std/tables, std/macros,
-    std/sets
+    std/sets, std/times
 export common, jsony
 
 when defined(windows):
@@ -75,6 +75,7 @@ proc sqlType(t: typedesc): string =
   elif t is float64: "double"
   elif t is bool: "boolean"
   elif t is enum: "text"
+  elif t is DateTime: "datetime"
   else: "json"
 
 proc prepareQuery(
