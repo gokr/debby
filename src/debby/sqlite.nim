@@ -103,6 +103,7 @@ proc sqlType(t: typedesc): string =
   elif t is float64: "REAL"
   elif t is bool: "INTEGER"
   elif t is enum: "TEXT"
+  elif t is DateTime: "TEXT"
   else: "TEXT"
 
 proc dbError*(db: Db) {.noreturn.} =
