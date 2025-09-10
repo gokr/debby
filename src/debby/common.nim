@@ -78,6 +78,10 @@ proc sqlDumpHook*[T: enum](v: T): string =
   ## SQL dump hook for enums
   $v
 
+proc sqlDumpHook*(v: DateTime): string =
+  ## ISO8601 representation is default
+  result = v.format("YYYY-MM-dd'T'HH:mm:ss")
+
 proc sqlParseHook*[T: string](data: string, v: var T) =
   ## SQL parse hook to convert to a string.
   v = data
@@ -114,6 +118,10 @@ proc sqlParseHook*[T: distinct](data: string, v: var T) =
   ## SQL parse distinct.
   sqlParseHook(data, v.distinctBase)
 
+proc sqlParseHook*[T: DateTime](data: string, v: var T) =
+  ## ISO8601 representation is default
+  v = data.parse("YYYY-MM-dd'T'HH:mm:ss")
+  
 proc sqlParse*[T](data: string, v: var T) =
   ## SQL parse distinct.
   when compiles(sqlParseHook(data, v)):
