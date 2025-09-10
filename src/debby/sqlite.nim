@@ -25,6 +25,14 @@ type
 
 {.push importc, cdecl, dynlib: Lib.}
 
+proc sqlDumpHook(v: DateTime): string =
+  ## Sqlite stores as TEXT so we use proper ISO8601 "YYYY-MM-dd'T'HH:mm:ss"
+  result = v.format("YYYY-MM-dd'T'HH:mm:ss")
+
+proc sqlParseHook(data: string, v: var DateTime) =
+  ## Sqlite stores as TEXT so we use proper ISO8601 "YYYY-MM-dd'T'HH:mm:ss"
+  v = data.parse("YYYY-MM-dd'T'HH:mm:ss")
+
 proc sqlite3_errmsg*(
   db: Db
 ): cstring

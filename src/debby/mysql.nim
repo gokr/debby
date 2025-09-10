@@ -18,6 +18,14 @@ type
 
 {.push importc, cdecl, dynlib: Lib.}
 
+proc sqlDumpHook(v: DateTime): string =
+  ## MySQL uses "YYYY-MM-dd HH:mm:ss" with a space instead of 'T'
+  result = v.format("YYYY-MM-dd HH:mm:ss")
+
+proc sqlParseHook(data: string, v: var DateTime) =
+  ## MySQL uses "YYYY-MM-dd HH:mm:ss" with a space instead of 'T'
+  v = data.parse("YYYY-MM-dd HH:mm:ss")
+
 proc mysql_init*(MySQL: DB): DB
 
 proc mysql_error*(MySQL: DB): cstring

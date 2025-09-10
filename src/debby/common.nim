@@ -18,7 +18,6 @@ const ReservedNames* = [
   "user"
 ] ## Do not use these strings in your tables or column names.
 
-const dateFormat = "YYYY-MM-dd HH:mm:ss"
 const ReservedSet = toHashSet(ReservedNames)
 
 proc toSnakeCase*(s: string): string =
@@ -62,13 +61,6 @@ proc validateObj*[T: ref object](t: typedesc[T]) =
 
   if not foundId:
     dbError("Table's must have primary key id: int field.")
-
-
-proc sqlDumpHook(v: DateTime): string =
-  result = v.format(dateFormat)
-
-proc sqlParseHook(data: string, v: var DateTime) =
-  v = data.parse(dateFormat)
 
 proc sqlDumpHook*[T: SomeFloat|SomeInteger](v: T): string =
   ## SQL dump hook for numbers.
