@@ -131,8 +131,8 @@ proc prepareQuery(
   if sqlite3_prepare_v2(db, query.cstring, query.len.cint, result, nil) != SQLITE_OK:
     dbError(db)
   for i, arg in args:
-    if arg.value.len == 0:
-      continue
+    # Bind empty strings as empty strings, not as NULL
+    # This is important for NOT NULL columns that should accept empty strings
     if sqlite3_bind_text(
       result,
       int32(i + 1),
