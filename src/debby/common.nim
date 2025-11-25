@@ -82,6 +82,19 @@ proc sqlDumpHook*(v: DateTime): string =
   ## ISO8601 representation is default
   result = v.format("YYYY-MM-dd'T'HH:mm:ss")
 
+# Jsony hooks for DateTime to prevent serialization of internal proc fields
+proc dumpHook*(s: var string, v: DateTime) =
+  ## Jsony dump hook for DateTime - converts to ISO8601 string
+  s.add '"'
+  s.add v.format("YYYY-MM-dd'T'HH:mm:ss")
+  s.add '"'
+
+proc parseHook*(s: string, i: var int, v: var DateTime) =
+  ## Jsony parse hook for DateTime - parses from ISO8601 string
+  var str: string
+  parseHook(s, i, str)
+  v = str.parse("YYYY-MM-dd'T'HH:mm:ss")
+
 proc sqlParseHook*[T: string](data: string, v: var T) =
   ## SQL parse hook to convert to a string.
   v = data
