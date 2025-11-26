@@ -1,5 +1,5 @@
 import common, jsony, std/strutils, std/strformat, std/tables, std/macros,
-    std/sets, std/times
+    std/sets, std/times, std/options
 export common, jsony
 
 when defined(windows):
@@ -61,7 +61,27 @@ proc dbError*(db: Db) {.noreturn.} =
 
 proc sqlType(t: typedesc): string =
   ## Converts nim type to sql type.
-  when t is string: "text"
+  when t is Option:
+    # For Option types, unwrap and get the SQL type for the inner type
+    # MySQL columns are nullable by default, so we just use the inner type
+    type InnerType = type(default(t).get)
+    when InnerType is string: "text"
+    elif InnerType is Bytes: "text"
+    elif InnerType is int8: "tinyint"
+    elif InnerType is uint8: "tinyint unsigned"
+    elif InnerType is int16: "smallint"
+    elif InnerType is uint16: "smallint unsigned"
+    elif InnerType is int32: "int"
+    elif InnerType is uint32: "int unsigned"
+    elif InnerType is int or InnerType is int64: "bigint"
+    elif InnerType is uint or InnerType is uint64: "bigint unsigned"
+    elif InnerType is float or InnerType is float32: "float"
+    elif InnerType is float64: "double"
+    elif InnerType is bool: "boolean"
+    elif InnerType is enum: "text"
+    elif InnerType is DateTime: "datetime"
+    else: "json"
+  elif t is string: "text"
   elif t is Bytes: "text"
   elif t is int8: "tinyint"
   elif t is uint8: "tinyint unsigned"

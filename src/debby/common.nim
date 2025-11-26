@@ -1,4 +1,4 @@
-import jsony, std/typetraits, std/strutils, std/macros, std/sets, std/strformat, std/times
+import jsony, std/typetraits, std/strutils, std/macros, std/sets, std/strformat, std/times, std/options
 
 type
   Db* = distinct pointer  ## Generic database pointer.
@@ -82,6 +82,16 @@ proc sqlDumpHook*(v: DateTime): string =
   ## ISO8601 representation is default
   result = v.format("YYYY-MM-dd'T'HH:mm:ss")
 
+proc sqlDumpHook*[T](v: Option[T]): string =
+  ## SQL dump hook for Option types - converts None to NULL
+  if v.isSome:
+    when compiles(sqlDumpHook(v.get)):
+      sqlDumpHook(v.get)
+    else:
+      $v.get
+  else:
+    "NULL"
+
 # Jsony hooks for DateTime to prevent serialization of internal proc fields
 proc dumpHook*(s: var string, v: DateTime) =
   ## Jsony dump hook for DateTime - converts to ISO8601 string
@@ -134,7 +144,19 @@ proc sqlParseHook*[T: distinct](data: string, v: var T) =
 proc sqlParseHook*[T: DateTime](data: string, v: var T) =
   ## ISO8601 representation is default
   v = data.parse("YYYY-MM-dd'T'HH:mm:ss")
-  
+
+proc sqlParseHook*[T](data: string, v: var Option[T]) =
+  ## SQL parse hook for Option types - converts NULL/empty to None
+  if data == "" or data == "NULL":
+    v = none(T)
+  else:
+    var innerValue: T
+    when compiles(sqlParseHook(data, innerValue)):
+      sqlParseHook(data, innerValue)
+    else:
+      innerValue = data.fromJson(T)
+    v = some(innerValue)
+
 proc sqlParse*[T](data: string, v: var T) =
   ## SQL parse distinct.
   when compiles(sqlParseHook(data, v)):
